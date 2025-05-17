@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, Date, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, Date, Boolean, ForeignKey, Numeric
 from sqlalchemy.orm import relationship
 from ..models import Base
 
@@ -11,6 +11,7 @@ class Trip(Base):
     start_date = Column(Date)
     end_date = Column(Date)
     is_private = Column(Boolean, default=False)
+    initial_budget = Column(Numeric(12, 2), default=0.00)
 
     thumbnail = Column(String(255))  
 

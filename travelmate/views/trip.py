@@ -9,6 +9,7 @@ from werkzeug.utils import secure_filename
 from datetime import datetime
 from cgi import FieldStorage
 import uuid
+from decimal import Decimal
 from ..config import HOST
 
 UPLOAD_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..','..', 'uploads'))
@@ -40,7 +41,8 @@ def create_trip(request):
             end_date=datetime.strptime(data.get('end_date'), '%Y-%m-%d'),
             is_private=data.get('is_private').lower() == 'true',
             thumbnail=thumbnail_filename,
-            owner_id=request.user_id
+            owner_id=request.user_id,
+            initial_budget=Decimal(data.get('initial_budget') or 0)
         )
         request.dbsession.add(trip)
         request.dbsession.flush()
@@ -61,6 +63,7 @@ def create_trip(request):
                 "id": trip.id,
                 "name": trip.name,
                 "description": trip.description,
+                "initial_budget": str(trip.initial_budget),
                 "start_date": trip.start_date.isoformat(),
                 "end_date": trip.end_date.isoformat(),
                 "is_private": trip.is_private,
@@ -94,6 +97,8 @@ def get_trips(request):
             result.append({
                 "id": t.id,
                 "name": t.name,
+                "description": t.description,
+                "initial_budget": str(t.initial_budget),
                 "start_date": t.start_date.isoformat(),
                 "end_date": t.end_date.isoformat(),
                 "thumbnail": t.thumbnail,
@@ -179,6 +184,7 @@ def update_trip(request):
         trip.start_date = datetime.strptime(data.get('start_date'), '%Y-%m-%d') if data.get('start_date') else trip.start_date
         trip.end_date = datetime.strptime(data.get('end_date'), '%Y-%m-%d') if data.get('end_date') else trip.end_date
         trip.thumbnail = thumbnail_filename
+        trip.initial_budget = Decimal(data.get('initial_budget') or trip.initial_budget)
 
         request.dbsession.flush()
         return api_response(message="Trip updated successfully", data={

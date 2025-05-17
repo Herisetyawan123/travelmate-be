@@ -47,6 +47,10 @@ def main(global_config, **settings):
     config.add_route('update_trip', '/api/trips/{id}/edit')
     config.add_route('delete_trip', '/api/trips/{id}/delete')
 
+    # comment routes
+    config.add_route('add_comment', '/api/trips/{id}/comments')
+    config.add_route('get_comments', '/api/trips/{id}/comments/all')
+
     config.scan('travelmate.views')
 
     return config.make_wsgi_app()
