@@ -1,0 +1,7 @@
+pyramid
+sqlalchemy
+psycopg2-binary
+pyjwt
+pyramid_sockjs
+python-dotenv
+waitress
