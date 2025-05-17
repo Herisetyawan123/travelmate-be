@@ -12,3 +12,7 @@ Base = declarative_base()
 from .user import User
 from .trip import Trip
 from .trip_member import TripMember
+from .destination import Destination
+from .expense import Expense
+from .comment import Comment
+from .itinerary import Itinerary

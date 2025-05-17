@@ -1,6 +1,7 @@
 from pyramid.view import view_config
 from datetime import datetime
 from ..models import Trip
+from ..models import TripMember
 from ..helpers.response import api_response
 from ..utils.auth import require_auth
 import os
@@ -12,7 +13,6 @@ from ..config import HOST
 
 UPLOAD_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..','..', 'uploads'))
 
-# --- Create Trip ---
 @view_config(route_name='create_trip', request_method='POST', renderer='json')
 @require_auth
 def create_trip(request):
@@ -33,7 +33,6 @@ def create_trip(request):
                 f.write(thumbnail_file.file.read())
             thumbnail_filename = f"/uploads/{renamed_filename}"
 
-
         trip = Trip(
             name=data.get('name'),
             description=data.get('description'),
@@ -45,6 +44,14 @@ def create_trip(request):
         )
         request.dbsession.add(trip)
         request.dbsession.flush()
+
+        trip_member = TripMember(
+            trip_id=trip.id,
+            user_id=request.user_id,
+            role='owner'
+        )
+        request.dbsession.add(trip_member)
+
         request.dbsession.commit()
 
         return api_response(
@@ -64,27 +71,42 @@ def create_trip(request):
     except Exception as e:
         return api_response(status=500, message=str(e), error="Failed to create trip")
 
-# --- Get All Trips (owned by user) ---
+
 @view_config(route_name='get_trips', request_method='GET', renderer='json')
 @require_auth
 def get_trips(request):
     try:
         user_id = request.user_id
-        trips = request.dbsession.query(Trip).filter_by(owner_id=user_id).all()
-        result = [{
-            "id": t.id,
-            "name": t.name,
-            "start_date": t.start_date.isoformat(),
-            "end_date": t.end_date.isoformat(),
-            "thumbnail": t.thumbnail,
-        } for t in trips]
+        trip_memberships = request.dbsession.query(TripMember).filter_by(user_id=user_id).all()
+        trip_ids = [tm.trip_id for tm in trip_memberships]
+
+        trips = request.dbsession.query(Trip).filter(Trip.id.in_(trip_ids)).all()
+
+        result = []
+        for t in trips:
+            members_data = [{
+                "user_id": member.user_id,
+                "name": member.user.username,
+                "role": member.role,
+            } for member in t.members]
+            print("members_data", members_data)
+
+            result.append({
+                "id": t.id,
+                "name": t.name,
+                "start_date": t.start_date.isoformat(),
+                "end_date": t.end_date.isoformat(),
+                "thumbnail": t.thumbnail,
+                "members": members_data
+            })
+
 
         return api_response(data=result)
 
     except Exception as e:
         return api_response(status=500, message=str(e), error="Failed to fetch trips")
 
-# --- Get Trip Detail ---
+
 @view_config(route_name='get_trip', request_method='GET', renderer='json')
 @require_auth
 def get_trip(request):
@@ -94,6 +116,22 @@ def get_trip(request):
         if not trip:
             return api_response(status=404, error="Trip not found")
 
+        # Serialisasi members
+        members_data = [{
+            "user_id": member.user_id,
+            "username": member.user.username if member.user else None,
+            "role": member.role
+        } for member in trip.members]
+
+        # Serialisasi comments
+        comments_data = [{
+            "id": comment.id,
+            "user_id": comment.user_id,
+            "username": comment.user.username if comment.user else None,
+            "content": comment.content,
+            "created_at": comment.created_at.isoformat() if comment.created_at else None
+        } for comment in trip.comments]
+
         result = {
             "id": trip.id,
             "name": trip.name,
@@ -101,7 +139,9 @@ def get_trip(request):
             "start_date": trip.start_date.isoformat(),
             "end_date": trip.end_date.isoformat(),
             "is_private": trip.is_private,
-            "thumbnail": trip.thumbnail
+            "thumbnail": trip.thumbnail,
+            "members": members_data,
+            "comments": comments_data,
         }
 
         return api_response(data=result)
@@ -109,7 +149,7 @@ def get_trip(request):
     except Exception as e:
         return api_response(status=500, message=str(e), error="Failed to fetch trip")
 
-# --- Update Trip ---
+
 @view_config(route_name='update_trip', request_method='PUT', renderer='json')
 @require_auth
 def update_trip(request):
@@ -154,7 +194,7 @@ def update_trip(request):
     except Exception as e:
         return api_response(status=500, message=str(e), error="Failed to update trip")
 
-# --- Delete Trip ---
+
 @view_config(route_name='delete_trip', request_method='DELETE', renderer='json')
 @require_auth
 def delete_trip(request):

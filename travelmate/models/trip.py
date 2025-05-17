@@ -17,3 +17,7 @@ class Trip(Base):
     owner_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     owner = relationship('User', back_populates='owned_trips')
     members = relationship('TripMember', back_populates='trip', cascade='all, delete-orphan')
+    destinations = relationship('Destination', back_populates='trip')
+    expenses = relationship('Expense', back_populates='trip', cascade='all, delete-orphan')
+    comments = relationship('Comment', back_populates='trip', cascade='all, delete-orphan')
+    itineraries = relationship('Itinerary', back_populates='trip', cascade='all, delete-orphan')
