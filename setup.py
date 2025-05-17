@@ -9,7 +9,9 @@ requires = [
     'python-dotenv',
     'waitress',
     'passlib',
-    'bcrypt'
+    'bcrypt',
+    'pyramid-apispec',
+    'werkzeug',
 ]
 
 setup(

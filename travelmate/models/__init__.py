@@ -10,3 +10,5 @@ SessionLocal = scoped_session(sessionmaker(bind=engine))
 Base = declarative_base()
 
 from .user import User
+from .trip import Trip
+from .trip_member import TripMember
