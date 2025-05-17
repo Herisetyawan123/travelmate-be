@@ -9,8 +9,7 @@ requires = [
     'python-dotenv',
     'waitress',
     'passlib',
-    'bcrypt',
-    'PyJWT'
+    'bcrypt'
 ]
 
 setup(
