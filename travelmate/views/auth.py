@@ -35,4 +35,11 @@ def login(request):
         return Response(json_body={'error': 'Invalid credentials'}, status=401)
 
     token = create_jwt(user.id)
-    return {'token': token}
+    return {
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email
+            },
+            'token': token
+        }
