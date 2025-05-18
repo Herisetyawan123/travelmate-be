@@ -54,6 +54,10 @@ def main(global_config, **settings):
     config.add_route('add_activity', '/api/itinerary/{itinerary_id}/activities')
     config.add_route('bulk_update_activities', '/api/activities/bulk-update')
 
+    # expense routes
+    config.add_route('get_expenses', '/api/expenses')
+    config.add_route('create_expense', '/api/expenses/store')
+    config.add_route('delete_expense', '/api/expenses/{id}/delete')
 
     # comment routes
     config.add_route('add_comment', '/api/trips/{id}/comments')
