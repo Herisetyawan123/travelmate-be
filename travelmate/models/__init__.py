@@ -16,3 +16,5 @@ from .destination import Destination
 from .expense import Expense
 from .comment import Comment
 from .itinerary import Itinerary
+from .itinerary import Activity
+# from .accommodation import Accommodation

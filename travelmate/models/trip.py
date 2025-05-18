@@ -8,6 +8,7 @@ class Trip(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(255), nullable=False)
     description = Column(Text)
+    destination = Column(Text)
     start_date = Column(Date)
     end_date = Column(Date)
     is_private = Column(Boolean, default=False)
