@@ -36,9 +36,12 @@ def main(global_config, **settings):
 
     # Definisi route utama
     config.add_route('home', '/')
+    config.add_route('dashboard', '/api/dashboard')
     config.add_route('register', '/api/register')
     config.add_route('login', '/api/login')
     config.add_route('profile', '/api/profile')
+    config.add_route('update_profile', '/api/profile/update')
+    config.add_route('update_password', '/api/profile/update/password')
     config.add_route('get_all_users', '/api/users')
     config.add_route('delete_activity', '/api/activities/delete/{id}')
 
@@ -59,9 +62,23 @@ def main(global_config, **settings):
     config.add_route('create_expense', '/api/expenses/store')
     config.add_route('delete_expense', '/api/expenses/{id}/delete')
 
+    # todo
+    config.add_route('get_trip_todos', '/api/trips/{trip_id}/todos')
+    config.add_route('update_trip_todo', '/api/trips/todos/{id}/edit')
+    config.add_route('create_trip_todo', '/api/trips/todos/store')
+    config.add_route('delete_trip_todo', '/api/trips/todos/{id}/delete')
+
     # comment routes
     config.add_route('add_comment', '/api/trips/{id}/comments')
     config.add_route('get_comments', '/api/trips/{id}/comments/all')
+
+    # notification routes
+    config.add_route('notifications', '/api/notifications')
+    config.add_route('mark_notification_read', '/api/notifications/{id}/read')
+
+    # destination routes
+    config.add_route('get_destination', '/api/destinations/{id}')
+    config.add_route('create_destination', '/api/destinations/store')
 
     config.scan('travelmate.views')
 

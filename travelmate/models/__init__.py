@@ -17,4 +17,5 @@ from .expense import Expense
 from .comment import Comment
 from .itinerary import Itinerary
 from .itinerary import Activity
-# from .accommodation import Accommodation
+from .trip_todo import TripTodo
+from .notification import Notification

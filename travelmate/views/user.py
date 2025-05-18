@@ -3,6 +3,7 @@ from ..utils.auth import require_auth
 from ..helpers.response import api_response
 from ..models import User
 from ..models import TripMember
+from ..utils.auth import hash_password
 
 @view_config(route_name='profile', renderer='json', request_method='GET')
 @require_auth
@@ -26,6 +27,59 @@ def profile_view(request):
         status=200,
         message="User profile retrieved successfully",
         data=user_data
+    )
+
+@view_config(route_name='update_profile', renderer='json', request_method='PUT')
+@require_auth
+def update_profile(request):
+    user_id = request.user_id
+    body = request.json_body
+
+    user = request.dbsession.query(User).filter(User.id == user_id).first()
+    if not user:
+        return api_response(
+            status=404,
+            message="User not found",
+            error="User with the given ID does not exist"
+        )
+
+    if 'username' in body:
+        user.username = body['username']
+    if 'email' in body:
+        user.email = body['email']
+
+    request.dbsession.commit()
+
+    return api_response(
+        status=200,
+        message="User profile updated successfully",
+        data={
+            "id": user.id,
+            "username": user.username,
+            "email": user.email
+        }
+    )
+
+@view_config(route_name='update_password', renderer='json', request_method='PUT')
+@require_auth
+def update_password(request):
+    user_id = request.user_id
+    body = request.json_body
+
+    user = request.dbsession.query(User).filter(User.id == user_id).first()
+    if not user:
+        return api_response(
+            status=404,
+            message="User not found",
+            error="User with the given ID does not exist"
+        )
+
+    user.password = hash_password(body['new_password'])
+    request.dbsession.commit()
+
+    return api_response(
+        status=200,
+        message="Password updated successfully"
     )
 
 @view_config(route_name='get_all_users', request_method='GET', renderer='json')

@@ -12,6 +12,9 @@ requires = [
     'bcrypt',
     'pyramid-apispec',
     'werkzeug',
+    'websockets',
+    'aiohttp',
+    'requests',
 ]
 
 setup(

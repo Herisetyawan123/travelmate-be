@@ -23,3 +23,4 @@ class Trip(Base):
     expenses = relationship('Expense', back_populates='trip', cascade='all, delete-orphan')
     comments = relationship('Comment', back_populates='trip', cascade='all, delete-orphan')
     itineraries = relationship('Itinerary', back_populates='trip', cascade='all, delete-orphan')
+    todos = relationship('TripTodo', back_populates='trip', cascade='all, delete-orphan')

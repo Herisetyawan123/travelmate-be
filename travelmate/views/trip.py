@@ -2,7 +2,7 @@ from pyramid.view import view_config
 from datetime import datetime
 from ..models import Trip
 from ..models import TripMember
-from ..models import User, Itinerary, Activity
+from ..models import User, Itinerary, Activity, Notification
 from ..helpers.response import api_response
 from ..utils.auth import require_auth
 import os
@@ -11,6 +11,7 @@ from datetime import datetime
 from cgi import FieldStorage
 import uuid
 from decimal import Decimal
+from ..utils.notify_socket import notify
 from ..config import HOST
 
 UPLOAD_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..','..', 'uploads'))
@@ -145,9 +146,7 @@ def get_trips(request):
 def get_trip(request):
     trip_id = request.matchdict.get('id')
     try:
-        trip = request.dbsession.query(Trip).filter_by(id=trip_id, owner_id=request.user_id).first()
-        if not trip:
-            return api_response(status=404, error="Trip not found")
+        trip = request.dbsession.query(Trip).filter_by(id=trip_id).first()
 
         # Serialisasi members
         members_data = [{
@@ -255,7 +254,7 @@ def invite_member(request):
         trip_id = data.get('trip_id')
         user_id = data.get('user_id')
 
-        trip = request.dbsession.query(Trip).filter_by(id=trip_id, owner_id=request.user_id).first()
+        trip = request.dbsession.query(Trip).filter_by(id=trip_id).first()
         if not trip:
             return api_response(status=404, message="Trip not found")
 
@@ -269,7 +268,16 @@ def invite_member(request):
 
         member = TripMember(trip_id=trip_id, user_id=user_id, role='member')
         request.dbsession.add(member)
+
+        notifi = Notification(
+            user_id=user_id,
+            title="Trip Invitation",
+            message=f"You have been invited to join the trip '{trip.name}'"
+        )
+
+        request.dbsession.add(notifi)
         request.dbsession.commit()
+
 
         return api_response(message="User invited to trip", data={"member_id": member.id})
 
@@ -344,6 +352,8 @@ def add_activity(request):
         request.dbsession.add(activity)
         request.dbsession.commit()
 
+        notify("activity_created")
+
         return api_response(
             status=201,
             message="Activity added successfully",
@@ -378,6 +388,8 @@ def bulk_update_activities(request):
             if act:
                 act.order = item['order']
     dbsession.commit()
+
+    notify("activity_updated")
     return api_response(
         status=200,
         message="Bulk update activities",
@@ -395,7 +407,7 @@ def delete_activity(request):
 
         request.dbsession.delete(activity)
         request.dbsession.commit()
-
+        notify("activity_deleted")
         return api_response(message="Activity deleted successfully")    
     except Exception as e:
         request.dbsession.rollback()
